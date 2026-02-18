@@ -1,6 +1,8 @@
 [submodule "o_lab_2"]
 	path = o_lab_2
 	url = https://github.com/MKoblents/o_lab_2
+	branch = main
 [submodule "o_lab_1"]
 	path = o_lab_1
 	url = https://github.com/MKoblents/o_lab_1
+	branch = main
