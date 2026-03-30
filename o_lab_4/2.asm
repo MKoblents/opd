@@ -1,0 +1,120 @@
+
+; ---------------------------------------------------------
+ORG 0x10
+RES:        WORD 0
+SUMM:       WORD 0
+LIST_ADDR:  WORD 0x101
+ORG 0x101
+LIST_START: 
+    WORD 5
+    WORD 0x103
+NODE_2: 
+    WORD 10
+    WORD 0x105
+NODE_3: 
+    WORD 15
+    WORD 0x107
+    WORD 5
+    WORD 0x101
+    
+ORG 0x20              
+; Переменные
+PTR_SUM:        WORD 0
+PTR_RES:        WORD 0      
+CURR_NODE:      WORD 0
+VISITED_COUNT:  WORD 0
+VISITED_TABLE:  WORD 0x300
+TEMP_PTR:       WORD 0
+SEARCH_IDX:     WORD 0
+FOUND_FLAG:     WORD 0 
+
+START:
+    LD #0x11
+    PUSH
+    LD #0x10
+    PUSH
+    LD LIST_ADDR
+    PUSH
+    CALL PROCESS_LIST
+    POP
+    POP
+    POP
+    HLT
+
+
+PROCESS_LIST:
+    LD (SP+1)
+    ST CURR_NODE
+    LD (SP+2)
+    ST PTR_RES
+    LD (SP+3)
+    ST PTR_SUM
+    CLA
+    ST (PTR_SUM)
+    ST VISITED_COUNT
+    
+TRAVERSE:
+    LD CURR_NODE
+    BEQ NOT_CYCLIC
+    CALL CHECK_VISITED
+    LD FOUND_FLAG
+    BNE CYCLE_FOUND
+    CALL ADD_TO_VISITED
+    LD (PTR_SUM)
+    ADD (CURR_NODE)
+    ST (PTR_SUM)
+    LD CURR_NODE
+    ADD #1
+    ST TEMP_PTR
+    LD (TEMP_PTR)
+    ST CURR_NODE
+    JUMP TRAVERSE
+CYCLE_FOUND:
+    LD #1
+    ST (PTR_RES)
+    RET
+
+NOT_CYCLIC:
+    LD #2
+    ST (PTR_RES)
+    RET
+
+CHECK_VISITED:
+    CLA
+    ST FOUND_FLAG       
+    ST SEARCH_IDX       
+    LD VISITED_COUNT    
+    BEQ CHECK_END
+    
+CHECK_LOOP:
+    LD SEARCH_IDX
+    SUB VISITED_COUNT
+    BGE CHECK_END
+    LD VISITED_TABLE 
+    ADD SEARCH_IDX
+    ST TEMP_PTR
+    LD (TEMP_PTR)
+    SUB CURR_NODE
+    BEQ SET_FOUND
+
+    LD SEARCH_IDX
+    INC
+    ST SEARCH_IDX
+    JUMP CHECK_LOOP
+    
+SET_FOUND:
+    LD #1
+    ST FOUND_FLAG
+    
+CHECK_END:
+    RET
+ADD_TO_VISITED:
+    LD VISITED_TABLE
+    ADD VISITED_COUNT
+    ST TEMP_PTR
+    
+    LD CURR_NODE
+    ST (TEMP_PTR)        ; Увеличить счетчик
+    INC
+    ST VISITED_COUNT
+    RET
